@@ -11,6 +11,11 @@ module id_ex(
     input wire           id_wreg,
 
     input wire[5:0] stall,
+
+    // for branch instruction
+    input wire[`RegBus] id_link_address;
+    output reg[`RegBus] ex_link_address;
+    
     // to exe unit
 
     output reg[`AluOpBus] ex_aluop,
@@ -33,6 +38,7 @@ always @ (posedge clk) begin
 
         ex_wd <= `NOPRegAddr;
         ex_wreg <= `WriteDisable;
+        ex_link_address <= `ZeroWord;
 
     end
     else if(stall[2] == `STOP && stall[3] == `NOSTOP) begin
@@ -43,6 +49,7 @@ always @ (posedge clk) begin
 
         ex_wd <= `NOPRegAddr;
         ex_wreg <= `WriteDisable;
+        ex_link_address <= `ZeroWord;
     end
     else if(stall[2] == `NOSTOP) begin
 
@@ -53,6 +60,7 @@ always @ (posedge clk) begin
 
         ex_wd <= id_wd;
         ex_wreg <= id_wreg;
+        ex_link_address <= id_link_address;
     end   
 end
 

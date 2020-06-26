@@ -126,6 +126,32 @@ always @ (*) begin
         end
         endcase
 
+        `EXE_ORI: begin
+            wreg_o <= `WriteEnable   
+            aluop_o <= `EXE_OR_OP;
+            alusel_o <= `EXE_RES_LOGIC;
+
+            reg1_read_o <= 1'b1;
+            reg2_read_o <= 1'b0;
+
+            imm <= {16'h0, inst_i[15:0]};
+            wd_o <= inst_i[20:16];
+            instvalid <= `InstValid;
+        end
+
+        `EXE_LUI: begin
+            reg_o <= `WriteEnable;
+            aluop_o <= `EXE_OR_OP;
+            alusel_o <= `EXE_RES_LOGIC;
+            
+            reg1_read_o <= 1'b1;
+            reg2_read_o <= 1'b0;
+
+            imm <= {inst_i[15:0], 16'h0};
+            wd_o <= inst_i[20:16];
+            instvalid <= `InstValid;
+        end
+
         `EXE_JAL: begin
             wreg_o <= `WriteEnable   
             aluop_o <= `EXE_JAL_OP;
@@ -143,31 +169,21 @@ always @ (*) begin
             instvalid <= `InstValid;           
         end
 
-        `EXE_ORI: begin
-            wreg_o <= `WriteEnable   
-            aluop_o <= `EXE_OR_OP;
-            alusel_o <= `EXE_RES_LOGIC;
-
-            reg1_read_o <= 1'b1;
-            reg2_read_o <= 1'b0;
-
-            imm <= {16'h0, inst_i[15:0]};
-            wd_o <= inst_i[20:16];
-            instvalid <= `InstValid;
-        end
-        `EXE_LUI: begin
-            reg_o <= `WriteEnable;
-            aluop_o <= `EXE_OR_OP;
-            alusel_o <= `EXE_RES_LOGIC;
+        `EXE_BEQ: begin
+            wreg_o <= `WriteDisable;
+            aluop_o <= `EXE_BEQ_OP;
+            alusel_o <= `EXE_RES_JUMP_BRANCH;
             
             reg1_read_o <= 1'b1;
-            reg2_read_o <= 1'b0;
+            reg2_read_o <= 1'b1;
+            wd_0 <= 5'b11111;
 
-            imm <= {inst_i[15:0], 16'h0};
-            wd_o <= inst_i[20:16];
             instvalid <= `InstValid;
-        end
 
+            if(reg1_o == reg2_o) begin
+                branch_target_address_o <= pc_plus_4 + imm_sll2_signedext;
+                branch_flag_o <= `Branch;
+            end                       
         default: begin
             
         end

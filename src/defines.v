@@ -35,11 +35,13 @@
 `define EXE_NOP_OP 8'b00000000
 `define EXE_ADD_OP 
 `define EXE_JAL_OP
+`define EXE_BEQ_OP
 
 //ALUSel
 `define EXE_RES_LOGIC 3'b001
 `define EXE_RES_NOP   3'b000
 `define EXE_RES_ARITHMETIC 
+`define EXE_RES_JUMP_BRANCH
 
 `define EXE_SPECIAL_INST 6'b000000
 

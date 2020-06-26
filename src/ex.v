@@ -7,7 +7,9 @@ module ex(
     input wire[`RegBus]     reg1_i,
     input wire[`RegBus]     reg2_i,
     input wire[`RegAddrBus] wd_i,
-    input wire              wreg_i
+    input wire              wreg_i,
+
+    input wire[`RegBus] link_address_i,
 
     output reg[`RegAddrBus] wd_o,
     output reg              wreg_o,
@@ -35,10 +37,18 @@ always @ (*) begin
             logicout <= reg1_i | reg2_i;           
         end
 
-        ·EXE_ADD_OP: begin
+        `EXE_ADD_OP: begin
             arithmetricres <= result_sum;
         default: begin
             logicout <= `ZeroWord;
+        end
+
+        `EXE_RES_JUMP_BRANCH: begin
+            wdata_o <= link_address_i;
+        end
+
+        default:
+            wdata_o <= `ZeroWord;
         end
 
         endcase

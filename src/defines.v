@@ -21,14 +21,13 @@
 `define NotBranch 1'b0
 
 //***********  Instruction specific macros *******************
-`define EXE_ORI   6'b001101    ///< ori opcode 
-`define EXE_NOP   6'b000000
-`define EXE_LUI   6'b001111    ///< lui   
-`define EXE_JAL   6'b000011    ///< jal
-`define EXE_BNE   6'b000101    ///< bne
-
-// func code 
-`define EXE_ADD   6'b100000    ///< add 
+`define EXE_NOP   7'b0000000
+`define EXE_LUI   7'b0110111    ///< LUI opcode 
+`define EXE_JAL   7'b1101111    ///< jal
+`define EXE_BNE   7'b1100011    ///< bne
+`define EXE_SW    7'b0100011    ///< sw
+`define EXE_LW    7'b0000011    ///< lw
+`define EXE_ADD   6'b0110011    ///< add 
 
 //ALUOp
 `define EXE_OR_OP  8'b00100101
@@ -36,12 +35,14 @@
 `define EXE_ADD_OP 
 `define EXE_JAL_OP
 `define EXE_BEQ_OP
+`define EXE_LW_OP
 
 //ALUSel
 `define EXE_RES_LOGIC 3'b001
 `define EXE_RES_NOP   3'b000
 `define EXE_RES_ARITHMETIC 
 `define EXE_RES_JUMP_BRANCH
+`define EXE_RES_LOAD_STORE
 
 `define EXE_SPECIAL_INST 6'b000000
 

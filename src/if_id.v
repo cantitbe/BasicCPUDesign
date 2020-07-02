@@ -1,6 +1,6 @@
 module if_id(
     input wire clk,
-    input wire rst,
+    input wire rst_n,
 
     input wire[5:0] stall,
     input wire flush,
@@ -15,8 +15,8 @@ module if_id(
 
 );
 
-always @ (posedge clk) begin
-    if(rst == `RstEnable) begin
+always @ (posedge clk or negedge rst_n) begin
+    if(rst_n == `RstEnable) begin
         id_pc   <= `ZeroWord;     ///< pc = 0 under reset
         id_inst <= `ZeroWord;     ///< inst = 0 under reset
         id_pc_invalid <= `PCValid;
@@ -36,6 +36,10 @@ always @ (posedge clk) begin
         id_inst <= if_inst;
         id_pc_invalid <= if_pc_invalid;
     end
+    else begin
+        id_pc <= id_pc;
+        id_inst <= id_inst;
+        id_pc_invalid <= id_pc_invalid;
 end
 
 endmodule

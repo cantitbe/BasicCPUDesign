@@ -2,7 +2,7 @@
 
 module pc_reg(
     input wire clk,
-    input wire rst,
+    input wire rst_n,
 
     input wire start_pulse,
     input wire[`InstAddrBus] start_pc,
@@ -19,16 +19,34 @@ module pc_reg(
     output reg[`InstAddrBus] data,
 
     // exception
-    output reg pc_invalid
+    output reg pc_invalid,
+    output reg if_start
 );
 
 assign we = 1'b0;
 assign data = `ZeroWord;
 
-reg if_start;
+reg start_pulse_d1;
+reg start_pulse_d2;
 
-always @ (posedge clk) begin
-    if(rst == `RstEnable) begin
+always @ (posedge clk or negedge rst_n) begin
+    if(rst_n == `RstEnable) begin
+        start_pulse_d1 <= 1'b0;
+        start_pulse_d2 <= 1'b0;
+    end
+    else begin
+        start_pulse_d1 <= start_pulse;
+        start_pulse_d2 <= start_pulse_d1;
+    end
+end
+
+//< sync to the same clk domain
+always @ (*) begin
+    if_start <= start_pulse_d1 & (~start_pulse_d2);    
+end
+
+always @ (posedge if_start or negedge rst_n) begin
+    if(rst_n == `RstEnable) begin
         ce <= `ChipDisable;
     end 
     else begin
@@ -39,24 +57,21 @@ end
 always @ (posedge clk) begin
     if(ce == `ChipDisable) begin
         pc <= 32'h00000000;
-    end else begin
-        if_start <= start_pulse;
-
-        if(flush == 1'b1) begin
-            pc <= `ZeroWord;
-        end
-        ///< need to do async op
-        else if(start_pulse == 1'b1 && if_start == 1'b0) begin
-            pc <= start_pc;
-        end
-        else if(stall[0] == `NOSTOP) begin
-            if(branch_flag_i == `Branch) begin
-                pc <= branch_target_address_i;
-            end
-            else begin
-                pc <= pc + 4'h4;
-            end
-        end
+    end 
+    else if(flush) begin
+        pc <= `ZeroWord;
+    end
+    else if(stall[0] == `STOP) begin
+        pc <= pc;
+    end
+    else if(if_start) begin
+        pc <= start_pc;
+    end
+    else if(branch_flag_i == `Branch) begin
+        pc <= branch_target_address_i;
+    end
+    else begin
+        pc <= pc + 4'h4;
     end
 end
 

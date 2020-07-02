@@ -11,7 +11,7 @@ module ex(
     input wire[`RegAddrBus] wd_i,
     input wire              wreg_i,
 
-    input wire[`RegBus] inst_i,           ///< current inst
+    input wire[`RegBus] inst_i,         ///< current inst, not used 
 
     output reg[`RegAddrBus] wd_o,
     output reg              wreg_o,
@@ -34,25 +34,16 @@ wire[`RegBus] pc_plus_4;
 wire[`RegBus] target;
 
 assign pc_plus_4 = pc_i + 4;
-assign target = { TO BE CAL };
 
-
-reg[`RegBus] logicout;
-reg[`RegBus] arithmetricres;
-
-wire ov_sum;
 wire[`RegBus] result_sum;
 
 assign aluop_o = aluop_i;
-assign mem_addr_o = reg1_i + {{16{inst_i[15]}}, inst_i[15:0]};
-
-assign reg2_o = reg2_i;
 
 assign result_sum = reg1_i + reg2_i;
 
 
 always @ (*) begin
-    if(rst == `RstEnable) begin
+    if(rst_n == `RstEnable) begin
         aluop_o  <= `EXE_NOP_OP;
 
         wd_o     <= `NOPRegAddr;
@@ -131,6 +122,10 @@ always @ (*) begin
             mem_ce_o <= `ChipEnable;
 
         end
+
+        default: begin
+        end
+        endcase
     end
 end
 

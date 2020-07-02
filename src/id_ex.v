@@ -1,6 +1,6 @@
 module id_ex(
     input wire clk,
-    input wire rst,
+    input wire rst_n,
 
     input wire[`AluOpBus] id_aluop,
     input wire[`InstAddrBus] id_pc,
@@ -32,8 +32,8 @@ module id_ex(
 
 );
 
-always @ (posedge clk) begin
-    if(rst == `RstEnable) begin
+always @ (posedge clk or negedge rst_n) begin
+    if(rst_n == `RstEnable) begin
         ex_aluop <= `EXE_NOP_OP;
         //ex_alusel <= `EXE_RES_NOP;
         ex_reg1 <= `ZeroWord;
@@ -89,7 +89,22 @@ always @ (posedge clk) begin
 
         ex_inst <= id_inst;
         ex_pc <= id_pc;
-    end   
+    end 
+    else begin
+ 
+        ex_aluop <= ex_aluop;
+        
+        ex_reg1 <= ex_reg1;
+        ex_reg2 <= ex_reg2;
+        ex_imm <= ex_imm;
+
+        ex_wd <= ex_wd;
+        ex_wreg <= ex_wreg;
+
+        ex_inst <= ex_inst;
+        ex_pc <= ex_pc;
+    end       
+
 end
 
 endmodule

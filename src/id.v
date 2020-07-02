@@ -1,10 +1,11 @@
 module id(
 
-    input wire rst,
+    input wire rst_n,
     input wire[`InstAddrBus] pc_i,
     input wire[`InstBus]  inst_i,
 
     input wire pc_invalid_i,
+    
     //< solve lw data dependency stall
     input wire[`AluOpBus] ex_aluop_i,
 
@@ -27,7 +28,7 @@ module id(
     input wire[`RegBus] mem_wdata_i,
     input wire[`RegAddrBus] mem_wd_i,
 
-    output reg stallreq,
+    output wire isloadrelated,
     
     ///<  to ex 
     output reg[`RegAddrBus] wd_o,
@@ -56,7 +57,7 @@ reg stallreq_for_reg1_loadrelated;
 reg stallreq_for_reg2_loadrelated;
 wire pre_inst_is_load;
 
-assign pre_inst_is_load = ex_aluop_i == `EXE_LW_OP;
+assign pre_inst_is_load = (ex_aluop_i == `EXE_LW_OP);
 
 wire[6:0] op  = inst_i[6:0];
 wire[2:0] op2 = inst_i[14:12];
@@ -71,8 +72,10 @@ reg instvalid;
 assign pc_plus_4 = pc_i + 4;
 
 always @ (*) begin
-    if(rst == `RstEnable) begin
+    if(rst_n == `RstEnable) begin
+
         aluop_o  <= `EXE_NOP_OP;
+        pc_o <= `ZeroWord;
         //alusel_o <= `EXE_RES_NOP;
         wd_o     <= `NOPRegAddr;
         wreg_o   <= `WriteDisable;
@@ -89,7 +92,7 @@ always @ (*) begin
 
     else begin
         aluop_o  <= `EXE_NOP_OP;
-        alusel_o <= `EXE_RES_NOP;
+        pc_o <= pc_i;
         
         wd_o     <= inst_i[11:7];
         wreg_o   <= `WriteDisable;
@@ -113,8 +116,6 @@ always @ (*) begin
 
             imm <= {inst_i[31:12], 12'h0};
                 
-            instvalid <= `InstValid;     
-
         end
 
         `EXE_ARTH: begin
@@ -127,10 +128,7 @@ always @ (*) begin
                     
                 reg1_read_o <= `ReadEnable;
                 reg2_read_o <= `RaadEnable;
-
-                imm <= `ZeroWord;
                     
-                instvalid <= `InstValid;   
             end
 
             default: begin
@@ -149,7 +147,6 @@ always @ (*) begin
 
             imm <= {11{inst_i[31]}, inst_i[31], inst_i[19:12], inst_i[20], inst_i[30:21], 1'b0};
                 
-            instvalid <= `InstValid;    
         end   
 
         `EXE_B: begin    
@@ -165,7 +162,6 @@ always @ (*) begin
 
                 imm <= {19{inst_i[31]}, inst_i[31], inst_i[7], inst_i[30:25], inst_i[11:8], 1'b0};
                 
-                instvalid <= `InstValid; 
             end
 
             default: begin
@@ -186,7 +182,6 @@ always @ (*) begin
 
                     imm <= {20{inst_i[31], inst_i[31:20]};
 
-                    instvalid <= `InstValid;  
                 end
 
                 default: begin
@@ -206,7 +201,6 @@ always @ (*) begin
 
                     imm <= {20{inst_i[31], inst_i[31:25], inst_i[11:7]};
 
-                    instvalid <= `InstValid;  
                 end
 
                 default: begin
@@ -214,7 +208,16 @@ always @ (*) begin
                 end
             endcase  
         end 
-        
+
+        `EXE_SYSTEM: begin
+            // WFI instruction decoding 
+            if(op2 == 3'b000 && inst_i[31:20] == 12'b000100000101) begin
+                is_wfi_o <= 1'b1;
+            end
+            else begin
+                instvalid <= `InstInvalid;
+            end
+
         default: begin
             instvalid <= `InstInvalid;
         end
@@ -225,7 +228,7 @@ end
 always @ (*) begin
     stallreq_for_reg1_loadrelated <= `NOSTOP;
 
-    if(rst == `RstEnable) begin
+    if(rst_n == `RstEnable) begin
         reg1_o <= `ZeroWord
     end
     else if(pre_inst_is_load == 1'b1 && ex_wd_i == reg1_addr_o
@@ -252,7 +255,7 @@ end
 always @ (*) begin
     stallreq_for_reg2_loadrelated <= `NOSTOP;
 
-    if(rst == `RstEnable) begin
+    if(rst_n == `RstEnable) begin
         reg2_o <= `ZeroWord
     end 
     else if(pre_inst_is_load == 1'b1 && ex_wd_i == reg2_addr_o
@@ -277,7 +280,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if(rst == `RstEnable) begin
+    if(rst_n == `RstEnable) begin
         imm_o <= `ZeroWord
     end 
     else begin
@@ -286,7 +289,7 @@ always @ (*) begin
 end
 
 always @ (*) begin
-    if(rst == `RstEnable) begin
+    if(rst_n == `RstEnable) begin
         pc_invalid_o <= `PCValid;
         inst_invalid_o <= `InstValid;
     end
@@ -297,7 +300,7 @@ always @ (*) begin
 end
 
 
-assign stallreq = stallreq_for_reg1_loadrelated | stallreq_for_reg2_loadrelated;
+assign isloadrelated = stallreq_for_reg1_loadrelated | stallreq_for_reg2_loadrelated;
     
 
 endmodule

@@ -1,6 +1,6 @@
 module mem(
 
-    input wire rst,
+    input wire rst_n,
 
     input wire[`RegaddrBus] wd_i,
     input wire wreg_i,
@@ -10,7 +10,7 @@ module mem(
     input wire[`AluOpBus] aluop_i,
 
     ///< data from ram
-    input wire[`RegBus]   mem_data_i,
+    input wire[`RegBus]  mem_data_i,
 
     ///< to mem/wb
     output reg[`RegAddrBus] wd_o,
@@ -21,7 +21,7 @@ module mem(
 
 
 always @ (*) begin
-    if(rst == `RstEnable) begin
+    if(rst_n == `RstEnable) begin
         wd_o <= `NOPRegAddr;
         wreg_o <= `WriteDisable;
         wdata_o <= `ZeroWord;

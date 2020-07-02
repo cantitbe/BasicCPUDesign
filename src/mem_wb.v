@@ -1,6 +1,6 @@
 module mem_wb(
     input wire clk,
-    input wire rst,
+    input wire rst_n,
 
     input wire[`RegAddrBus] mem_wd,
     input wire mem_wreg,
@@ -14,8 +14,8 @@ module mem_wb(
     output wire[`RegBus] wb_wdata
 );
 
-always @ (posedge clk) begin
-    if(rst == `RstEnable) begin
+always @ (posedge clk or negedge rst_n) begin
+    if(rst_n == `RstEnable) begin
         wb_wd <= `NOPRegAddr;
         wb_wreg <= `WriteDisable;
         wb_wdata <= `ZeroWord;
@@ -35,6 +35,12 @@ always @ (posedge clk) begin
         wb_wreg <= mem_wreg;
         wb_wdata <= mem_wdata;
     end
+    else begin
+        wb_wd <= wb_wd;
+        wb_wreg <= wb_wreg;
+        wb_wdata <= wb_wdata;   
+    end   
+
 end
 
 endmodule

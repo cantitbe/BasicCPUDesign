@@ -1,7 +1,7 @@
 //*********** Global Macros  **********************************
 
-`define RstEnable      1'b1 
-`define RstDisable     1'b0
+`define RstEnable      1'b0 
+`define RstDisable     1'b1
 `define ChipEnable     1'b1
 `define ChipDisable    1'b0
 `define ZeroWord       32'b00000000
@@ -11,9 +11,12 @@
 `define ReadDisable    1'b0
 `define AluOpBus       7:0
 `define AluSelBus      2:0
-`define InstValid      1'b1
-`define InstInvalid    1'b0 
-
+`define InstValid      1'b0
+`define InstInvalid    1'b1 
+`define PCValid        1'b0
+`define PCInvalid      1'b1
+`define TRUE           1'b1
+`define FALSE          1'b0
 
 `define STOP    1'b1
 `define NOSTOP  1'b0
